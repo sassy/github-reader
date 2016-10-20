@@ -3,19 +3,25 @@
 const {app, BrowserWindow} = require('electron');
 const Rx = require('rxjs/RX');
 
-const winStream = Rx.Observable.fromEvent(app, 'ready')
+Rx.Observable.fromEvent(app, 'ready')
   .map(() => {
-    console.log('ready');
     return new BrowserWindow({width: 800, height: 600});
-  });
+  }).subscribe((win) => {
+    win.loadURL(`file://${__dirname}/index.html`);
+    win.webContents.openDevTools();
 
-winStream.subscribe((win) => {
-  win.loadURL(`file://${__dirname}/index.html`);
+    const closeSubscription = Rx.Observable.fromEvent(win, 'closed')
+      .flatMap(() => {
+        return Rx.Observable.fromEvent(app, 'activate');
+      }).subscribe(() => {
+        app.emit('ready');
+        closeSubscription.unsubscribe();
+      });
 });
 
-Rx.Observable.fromEvent(app, 'windo-all-closed')
-  .subscribe(() => {
-    if (process.platform !== 'darwin') {
-      app.quit();
-    }
+Rx.Observable.fromEvent(app, 'window-all-closed')
+  .filter(() => {
+    return process.platform !== 'darwin';
+  }).subscribe(() => {
+    app.quit();
   });
