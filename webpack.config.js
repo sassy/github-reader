@@ -1,18 +1,11 @@
 module.exports = {
-  entry: './renderer/index.js',
+  entry: './renderer/js/index.js',
   output: {
-    filename: 'bundle.js'
+    filename: './renderer/bundle.js'
   },
-  target: 'node',
   module: {
     loaders: [
       { test: /\.json$/, loader: 'json-loader' }
     ]
-  },
-  node: {
-    console: 'empty',
-    fs: 'empty',
-    net: 'empty',
-    tls: 'empty'
   }
 };
