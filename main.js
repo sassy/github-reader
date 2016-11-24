@@ -3,6 +3,7 @@
 const {app, BrowserWindow} = require('electron');
 const Rx = require('rxjs/RX');
 const url = require('url');
+const request = require('request');
 
 Rx.Observable.fromEvent(app, 'ready')
   .map(() => {
@@ -22,7 +23,32 @@ Rx.Observable.fromEvent(app, 'ready')
       const query = url.parse(newurl).query;
       return query;
     }).subscribe((query) => {
+      const code = query.split('=')[1];
+      request({
+        url: 'https://github.com/login/oauth/access_token',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        json:true,
+        form: {
+          "client_id" : "69b2af2069a4ef53c694",
+          "client_secret" : "3b8a3a9958d4568f201971eb55ae85bdab5ea3bc",
+          "code" : code
+        }
+      }, (error, response, body) => {
+        win.loadURL(`file://${__dirname}/renderer/index.html?access_token=${ body.access_token }`);
+      });
+    });
+    Rx.Observable.fromEvent(win.webContents, 'will-navigate', (e, navUrl) => {
+      return navUrl;
+    }).subscribe((navUrl) => {
+      if (url.parse(navUrl).hostname === 'localhost') {
+        const query = url.parse(navUrl).query;
         win.loadURL(`file://${__dirname}/renderer/index.html?${ query }`);
+      } else {
+        win.webContents.loadURL(navUrl);
+      }
     });
 });
 

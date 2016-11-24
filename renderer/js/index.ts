@@ -2,9 +2,17 @@
 
 const Rx = require('rxjs/RX');
 
+const access_token = location.search.split('=')[1];
+
 const apiStream = Rx.Observable.fromPromise(
-  fetch('https://api.github.com/users/sassy/repos')
+  fetch('https://api.github.com/user?access_token=' + access_token)
 ).flatMap((response) => {
+  return response.json();
+}).flatMap((json) => {
+  return Rx.Observable.fromPromise(
+    fetch('https://api.github.com/users/' + json.login + '/repos')
+  );
+}).flatMap((response) => {
   return response.json();
 }).flatMap((array) => {
   return Rx.Observable.from(array);

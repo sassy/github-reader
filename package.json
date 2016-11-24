@@ -18,6 +18,7 @@
     "webpack": "^1.13.2"
   },
   "dependencies": {
+    "request": "^2.79.0",
     "rxjs": "^5.0.0-rc.1"
   }
 }
